@@ -1,65 +1,64 @@
-# 3D サイコロ（Three.js + Rapier）
+# 3D Dice (Three.js + Rapier)
 
-このプロジェクトは、Three.js と Rapier で動作する 3D サイコロ・デモです。PBR 表現のダイス、物理ベースのロール挙動、カジノ風のテーブルと背景（ボケ演出）を備えています。UI は排除し、キャンバス全画面でシンプルに遊べる構成です。
+This is a 3D dice demo powered by Three.js and Rapier. It features PBR‑styled dice, physics‑based rolling, and a casino‑inspired table and background with a soft bokeh look. The UI is intentionally minimal: a full‑screen canvas you can tap/click.
 
-本プロジェクトは全て CODEX（Codex CLI）を用いて自動生成しました。
+This project was fully generated using CODEX (Codex CLI).
 
-## 特徴
-- Three.js による PBR ルックの 6 面ダイス（丸角ボックス＋ステッカー）
-- Rapier 物理（床・壁・天井＋木枠レール）で自然な転がりと停止判定
-- カジノ風フェルト／木目ベース／レザー調レール／金縁の簡易マテリアル
-- 明るい暖色系のボケ背景（CanvasTexture で生成）
-- クリック/タップ（pointerdown）でいつでも振り直し可能（動作中も可）
+## Features
+- PBR 6‑sided dice (rounded box + sticker faces)
+- Rapier physics (floor, walls, ceiling, and tray rails) for natural rolling and settling
+- Casino‑style felt, wood base, oxblood leather rails, and subtle gold trim
+- Bright, warm bokeh background (generated via CanvasTexture)
+- Reroll anytime: pointerdown triggers a roll even while it’s running
 
-## 動作環境
-- Node.js 18 以上（Vite 5 系を使用）
-- 推奨ブラウザ: 最新の Chrome / Edge / Safari
+## Requirements
+- Node.js 18+ (uses Vite 5)
+- Modern browser: latest Chrome / Edge / Safari
 
-## セットアップ
+## Setup
 ```bash
-# 依存関係のインストール
 npm install
 ```
 
-## 実行（開発）
+## Development
 ```bash
 npm run dev
 ```
-- Vite の開発サーバーが起動します（既定では http://localhost:5173 ）。
-- ファイル保存でホットリロードされます。
+- Starts the Vite dev server (default http://localhost:5173)
+- Hot reload on save
 
-## ビルド（本番）
+## Build & Preview
 ```bash
-npm run build   # dist/ に出力
-npm run preview # 本番ビルドの簡易サーバーで確認
+npm run build    # emits to dist/
+npm run preview  # serve the production build locally
 ```
-- 生成された `dist/` フォルダを任意の静的ホスティングに配置してください。
+- Deploy the `dist/` folder to any static host.
 
-## 操作方法
-- クリック/タップ（キャンバス内）: サイコロを振る（ロール中でも即時振り直し）
-- スペースキー: サイコロを振る
+## Controls
+- Click/Tap inside the canvas: roll (works even while rolling)
+- Space key: roll
 
-## 主なファイル
-- `index.html` : 全画面キャンバスとエントリーポイント
-- `src/main.ts` : シーン構築、物理、入力、描画ループ、見た目の定義一式
+## Key Files
+- `index.html`: Full‑screen canvas and entry point
+- `src/main.ts`: Scene setup, physics, input, render loop, and visuals
 
-## 実装メモ（調整ポイント）
-- 物理（落下・勢い）
-  - 重力: `new RAPIER.World({ y: -16.0 })`
-  - 開始高さ: `PHYS.startY = 3.0`
-  - ロール中でも振り直し可能（`pointerdown` で入力、カウンタをリセット）
-  - 固定タイムステップ（`PHYS.worldHz`）に合わせ、サブステップで実時間に追従
-- 画面外への逸脱対策
-  - 可視レール（木枠）をコライダーとして追加（フェルト周囲）
-  - ソフト境界 `BOUNDS` で外へ出そうな場合に穏やかに内側へインパルス
-- 見た目（マテリアル／背景）
-  - ダイス本体: `MeshPhysicalMaterial` に粗さ・クリアコートを設定、微ラフネス/バンプで白飛びを抑制
-  - ステッカー: 透明背景のテクスチャ（点のみ描画）でボディ色に馴染むよう調整
-  - フェルト・木目・レザー: `CanvasTexture` で簡易生成（色味や粗さはコード内の定数で調整可）
-  - 背景: 明るい暖色グラデ＋ボケ円（ビネットは無効化）
-- 明るさ（白飛び対策）
-  - 露出: `renderer.toneMappingExposure` を適宜調整（例: 1.35〜1.50）
-  - 強いハイライトが気になる場合は、各 `MeshPhysicalMaterial` の `roughness` を上げ、`clearcoat`/`envMapIntensity`/`specularIntensity` をやや下げると落ち着きます。
+## Implementation Notes (Tuning)
+- Physics (fall and energy)
+  - Gravity: `new RAPIER.World({ y: -16.0 })`
+  - Start height: `PHYS.startY = 3.0`
+  - Immediate re‑roll: pointerdown always triggers a new roll and resets settle counters
+  - Fixed timestep (`PHYS.worldHz`) with sub‑stepping to follow real time
+- Containment
+  - Visible wooden tray rails are also colliders (keeps dice on the felt)
+  - Soft bounds `BOUNDS` gently nudge dice back inside if they drift out
+- Look (materials / background)
+  - Dice: `MeshPhysicalMaterial` with micro‑roughness/bump; tuned to avoid highlight clipping
+  - Stickers: transparent background textures (pips only) to match the die body’s white
+  - Felt / wood / leather: generated `CanvasTexture` with tweakable color/roughness
+  - Background: bright warm gradient + bokeh circles, vignette disabled
+- Brightness (avoid blown highlights)
+  - Adjust `renderer.toneMappingExposure` (e.g., 1.35–1.50)
+  - If highlights clip, increase material `roughness`, and slightly reduce `clearcoat`, `envMapIntensity`, or `specularIntensity`
 
-## ライセンス
-- 本リポジトリ内コードはプロジェクト目的で自由に利用可能です（サードパーティ依存は各ライセンスに従います）。
+## License
+- Code in this repository may be used for project purposes. Third‑party dependencies remain under their respective licenses.
